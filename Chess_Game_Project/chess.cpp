@@ -58,31 +58,19 @@ bool Rook::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 	int fc = returnColIndex(fromCol);
 	int tr = returnRowIndex(toRow);
 	int tc = returnColIndex(toCol);
-	//biundary check
-	//color check
-	//move check
 	bool Check = doubleCheck(fromRow, fromCol, toRow, toCol, board);
 	if (Check)
 	{
 		//vertical moves
 		string cl = colorGetter();
-		if (fc == tc && fr > tr) //move up
-		{
-			for (int i = fr;i <= tr;i--)
-			{
-				if ((cl == "black" || cl == "BLACK" || cl == "Black") && fr == 0)
-				{
-					return false; //boundary check for black
-				}
-				if (grid[i][tc] == NULL)
-				{
+		if (fc == tc && fr > tr) { //move up 
+			for (int i = fr; i >= tr; i--) {
+				if (board.grid[i][tc] == NULL) {
 					return true;
 				}
-				else
-				{
-					if (i != tr && i != fr)
-					{
-						cout << "there is a piece in the path!" << endl;
+				else {
+					if (i > tr && i != fr) {
+						cout << "There is a piece in the path!" << endl;
 						return false;
 					}
 					else
@@ -91,88 +79,57 @@ bool Rook::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 			}
 		}
 		//move down
-		if (fc == tc && fr < tr)
-		{
-			for (int i = fr;i <= tr;i++)
-			{
-				if ((cl == "white" || cl == "WHITE" || cl == "White") && fr == 7)
-				{
-					return false;
-				}
-				if (grid[i][tc] == NULL)
-				{
+		if (fc == tc && fr < tr) {
+			for (int i = fr; i <= tr; i++) {
+				if (board.grid[i][tc] == NULL)
 					return true;
-				}
-				else
-				{
-					if (i != tr && i != fr)
-					{
-						cout << "there is a piece in the path!" << endl;
+				else {
+					if (i < tr && i != fr) {
+						cout << "There is a piece in the path!" << endl;
 						return false;
 					}
 					else
 						return true;
 				}
 			}
-
 		}
 		//horizontal moves 
 		//move right 0->7
-		if (fr == tr && fc < tc)
-		{
-			if (fc < 7)
-			{
-				for (int i = fc;i <= tc;i++)
-				{
-					if (grid[tr][i] == NULL)
-					{
+		if (fr == tr && fc < tc) {
+			if (fc < 7) {
+				for (int i = fc;i <= tc;i++) {
+					if (board.grid[tr][i] == NULL)
 						return true;
-					}
-					else
-					{
+					else {
 						if (i == tc)
-						{
 							return true;
-						}
-						else if (i != fc && i < tc)
-						{
-							cout << "there is a piece in the path" << endl;
+						else if (i != fc && i < tc) {
+							cout << "There is a piece in the path" << endl;
 							return false;
 						}
 					}
 				}
 			}
-			else
-			{
-				cout << "cannot move further right" << endl;
+			else {
+				cout << "Cannot move further right" << endl;
 				return false;
 			}
 		}
 		//move left 7->0
-		if (fr == tr && fc > tc)
-		{
-			if (fc < 0)
-			{
-				cout << "cannot move further left" << endl;
+		if (fr == tr && fc > tc) {
+			if (fc < 0) {
+				cout << "Cannot move further left" << endl;
 				return false;
 			}
-			else
-			{
-				for (int i = fc;i <= tc;i--)
-				{
-					if (grid[tr][i] == NULL)
-					{
+			else {
+				for (int i = fc; i >= tc; i--) {
+					if (board.grid[tr][i] == NULL)
 						return true;
-					}
-					else
-					{
+					else {
 						if (i == tc)
-						{
 							return true;
-						}
-						else if (i != fc && i < tc)
-						{
-							cout << "there is a piece in the path" << endl;
+						else if (i != fc && i > tc) {
+							cout << "There is a piece in the path" << endl;
 							return false;
 						}
 					}
@@ -184,3 +141,129 @@ bool Rook::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 	else
 		return false;
 }
+
+bool Pawn::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) // newly added
+{
+	if (doubleCheck(fromRow, fromCol, toRow, toCol, board) == false)
+		return false;
+	// valid movement
+	int ct = returnColIndex(toCol);
+	int rt = returnRowIndex(toRow);
+	int cf = returnColIndex(fromCol);
+	int rf = returnRowIndex(fromRow);
+	string clr = board.grid[rf][cf]->colorGetter();
+	if (clr == "black" || clr == "Black" || clr == "Black") {
+		if (rf == 1)
+			isFirstMove = true;
+		else
+			isFirstMove = false;
+		if (board.grid[rt][ct] == nullptr)
+		{
+			if (isFirstMove) {
+				if (rt - rf != 1 && rt - rf != 2) {
+					cout << "Pawn can move only 1 or 2 steps forward." << endl;
+					return false;
+				}
+			}
+			else
+				if (rt - rf != 1) {
+					cout << "Pawn can move only 1 step forward." << endl;
+					return false;
+				}	
+		}
+		// diagonal capture
+		else {
+			if (rt == rf + 1 && ct == cf - 1)
+				return true;
+			if (rt == rf + 1 && ct == cf + 1)
+				return true;
+			return false;
+		}
+	}
+	else if (clr == "white" || clr == "White" || clr == "WHITE") {
+		if (rf == 6)
+			isFirstMove = true;
+		else
+			isFirstMove = false;
+		if (board.grid[rt][ct] == nullptr)
+		{
+			if (isFirstMove) {
+				if (rf - rt != 1 && rf - rt != 2) {
+					cout << "Pawn can move only 1 or 2 steps forward." << endl;
+					return false;
+				}
+			}
+			else
+				if (rf - rt != 1) {
+					cout << "Pawn can move only 1 step forward." << endl;
+					return false;
+				}
+		}
+		// diagonal capture
+		else {
+			if (rt == rf - 1 && ct == cf - 1)
+				return true;
+			else if (rt == rf - 1 && ct == cf + 1)
+				return true;
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Knight::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) // newly added
+{
+	if (doubleCheck(fromRow, fromCol, toRow, toCol, board) == false)
+		return false;
+	// valid movement
+	int ct = returnColIndex(toCol);
+	int rt = returnRowIndex(toRow);
+	int cf = returnColIndex(fromCol);
+	int rf = returnRowIndex(fromRow);
+	if (rt == rf + 2 && ct == cf - 1)
+		return true;
+	if (rt == rf + 2 && ct == cf + 1)
+		return true;
+	if (rt == rf + 1 && ct == cf + 2)
+		return true;
+	if (rt == rf - 1 && ct == cf + 2)
+		return true;
+	if (rt == rf - 2 && ct == cf + 1)
+		return true;
+	if (rt == rf - 2 && ct == cf - 1)
+		return true;
+	if (rt == rf + 1 && ct == cf - 2)
+		return true;
+	if (rt == rf - 1 && ct == cf - 2)
+		return true;
+	return false;
+}
+
+bool King::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) // newly added
+{
+	if (doubleCheck(fromRow, fromCol, toRow, toCol, board) == false)
+		return false;
+	// valid movement
+	int ct = returnColIndex(toCol);
+	int rt = returnRowIndex(toRow);
+	int cf = returnColIndex(fromCol);
+	int rf = returnRowIndex(fromRow);
+	if (rt == rf - 1 && ct == cf)
+		return true;
+	if (rt == rf + 1 && ct == cf)
+		return true;
+	if (rt == rf && ct == cf - 1)
+		return true;
+	if (rt == rf && ct == cf + 1)
+		return true;
+	if (rt == rf - 1 && ct == cf - 1)
+		return true;
+	if (rt == rf + 1 && ct == cf + 1)
+		return true;
+	if (rt == rf + 1 && ct == cf - 1)
+		return true;
+	if (rt == rf - 1 && ct == cf + 1)
+		return true;
+	return false;
+}
+
