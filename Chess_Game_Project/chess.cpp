@@ -474,3 +474,162 @@ bool Board::isCheckMate(string clr) // newly added
 	}
 	return true; // no escape (Check Mate)
 }
+
+Board::Board()
+{
+	for (int i = 0;i < 8;i++)
+	{
+		for (int j = 0;j < 8;j++)
+		{
+			grid[i][j] = nullptr;
+		}
+	}
+	currentTurn = "white";//first turn is of white
+	setupBoard();//will create memory with new
+}
+piece::piece(string c, const char& s, const char p[])
+{
+	color = c;
+	symbol = s;
+	for (int i = 0;i < 3;i++)
+	{
+		position[i] = p[i];
+	}
+}
+Pawn::Pawn(string c, const char& s, const char p[]) :piece(c, s, p)
+{
+	isFirstMove = true;
+}
+Rook::Rook(const string c, const char& s, const char p[]) :piece(c, s, p) {}
+Bishop::Bishop(const string c, const char& s, const char p[]) :piece(c, s, p) {}
+Queen::Queen(const string c, const char& s, const char p[]) :piece(c, s, p) {}
+King::King(const string c, const char& s, const char p[]) :piece(c, s, p) {}
+Knight::Knight(const string c, const char& s, const char p[]) :piece(c, s, p) {}
+Board::~Board()
+{
+	for (int i = 0;i < 8;i++)
+	{
+		for (int j = 0;j < 8;j++)
+		{
+			if (grid[i][j] != nullptr)
+			{
+				delete grid[i][j];
+				grid[i][j] = nullptr;
+			}
+		}
+	}
+}
+piece::~piece() {}//ensures the deletion of derived class objects
+void Board::setupBoard()
+{//Black pieces
+	grid[0][0] = new Rook("black", 'r', "1a");
+	grid[0][1] = new Knight("black", 'n', "1b"); //n used for knight
+	grid[0][2] = new Bishop("black", 'b', "1c");
+	grid[0][3] = new Queen("black", 'q', "1d");
+	grid[0][4] = new King("black", 'k', "1e");
+	grid[0][5] = new Bishop("black", 'b', "1f");
+	grid[0][6] = new Knight("black", 'n', "1g");
+	grid[0][7] = new Rook("black", 'r', "1h");
+
+	grid[1][0] = new Pawn("black", 'p', "2a");
+	grid[1][1] = new Pawn("black", 'p', "2b");
+	grid[1][2] = new Pawn("black", 'p', "2c");
+	grid[1][3] = new Pawn("black", 'p', "2d");
+	grid[1][4] = new Pawn("black", 'p', "2e");
+	grid[1][5] = new Pawn("black", 'p', "2f");
+	grid[1][6] = new Pawn("black", 'p', "2g");
+	grid[1][7] = new Pawn("black", 'p', "2h");
+	//White pieces
+	grid[6][0] = new Pawn("white", 'P', "7a");
+	grid[6][1] = new Pawn("white", 'P', "7b");
+	grid[6][2] = new Pawn("white", 'P', "7c");
+	grid[6][3] = new Pawn("white", 'P', "7d");
+	grid[6][4] = new Pawn("white", 'P', "7e");
+	grid[6][5] = new Pawn("white", 'P', "7f");
+	grid[6][6] = new Pawn("white", 'P', "7g");
+	grid[6][7] = new Pawn("white", 'P', "7h");
+
+	grid[7][0] = new Rook("white", 'R', "8a");
+	grid[7][1] = new Knight("white", 'N', "8b");
+	grid[7][2] = new Bishop("white", 'B', "8c");
+	grid[7][3] = new Queen("white", 'Q', "8d");
+	grid[7][4] = new King("white", 'K', "8e");
+	grid[7][5] = new Bishop("white", 'B', "8f");
+	grid[7][6] = new Knight("white", 'N', "8g");
+	grid[7][7] = new Rook("white", 'R', "8h");
+}
+void Board::printBoard()const
+{
+	cout << "  a  b  c  d  e  f  g  h" << endl;
+	for (int i = 0;i < 8;i++)
+	{
+		cout << i + 1 << " ";
+		for (int j = 0;j < 8;j++)
+		{
+			if (grid[i][j] != nullptr)
+			{
+				cout << grid[i][j]->symbolGetter() << "  ";
+			}
+			else
+				cout << "x  ";
+		}
+		cout << endl;
+	}
+	cout << "  a  b  c  d  e  f  g  h" << endl;
+	cout << "\tcurrent turn: " << currentTurn << endl;
+}
+bool piece::isPawn() { return false; }
+bool Pawn::isPawn() { return true; }
+void piece::markAsMoved() {}
+void Pawn::markAsMoved() { isFirstMove = false; }
+bool Board::movePiece()
+{
+	cout << "enter your inital position (row first column second) e.g 1a)" << endl;
+	string from, to;
+	cin >> from;
+	cout << "now enter your target position (row first column second) e.g 2a)" << endl;
+	cin >> to;
+	int fr, tr, fc, tc;
+	fr = returnRowIndex(from[0]);
+	tr = returnRowIndex(to[0]);
+	fc = returnColIndex(from[1]);
+	tc = returnColIndex(to[1]);
+
+	if (grid[fr][fc]->colorGetter() != currentTurn)
+		return false;
+
+	bool isValid = grid[fr][fc]->isValidMove(from[0], from[1], to[0], to[1], *this);//*this for Board&
+	if (isValid)
+	{
+		if (grid[tr][tc] != nullptr)
+		{
+			delete grid[tr][tc];
+		}
+		piece* move = grid[fr][fc];
+		grid[tr][tc] = move;
+		grid[fr][fc] = nullptr;
+
+		char newPos[3];
+		newPos[0] = tr + '1';
+		newPos[1] = tc + 'a';
+		newPos[2] = '\0';
+		move->positionSetter(newPos);  //position updated
+		if (move->isPawn())
+		{
+			move->markAsMoved();
+		}
+		if (currentTurn == "white")
+		{
+			currentTurn = "black";
+		}
+		else
+			currentTurn = "white";
+		return true;
+	}
+	else
+	{
+		cout << "invalid move ,try again" << endl;
+		return false;
+	}
+
+}
