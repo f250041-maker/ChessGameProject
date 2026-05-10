@@ -20,51 +20,47 @@ char* piece::positionGetter()
 	return position;
 }
 
-void piece::colorSetter(string c) { // newly added 
+void piece::colorSetter(string c) { 
 	color = c;
 }
 
-string piece::colorGetter() { // newly added 
+string piece::colorGetter() { 
 	return color;
 }
-int returnRowIndex(char row) //check added
-{
+int returnRowIndex(char row) { //newly added 
 	if (row < '1' || row > '8')
-	{
 		return -1;
-	}
-	return 8 - (row- '0');
-} 
+	return row - '1';
+}
 
-int returnColIndex(char col) 
-{                              // newly added //check added
-	if (col < 'a' || col> 'h') {
+int returnColIndex(char col) {// newly added                      
+	if (col < 'a' || col> 'h') 
 		return -1;
-	}
 	return col - 'a';
 }
-bool doubleCheck(char fromRow, char fromCol, char toRow, char toCol, Board& board) // newly added
+
+bool doubleCheck(char fromRow, char fromCol, char toRow, char toCol, Board& board) 
 {
-	// out of bound check
 	int ct = returnColIndex(toCol);
 	int rt = returnRowIndex(toRow);
 	int cf = returnColIndex(fromCol);
 	int rf = returnRowIndex(fromRow);
-	if (ct <= -1 || ct >= 8 || rt <= -1 || rt >= 8) //boundary check
+	//boundary check
+	if (ct <= -1 || ct >= 8 || rt <= -1 || rt >= 8) 
 		return false;
-
-	if (rf == rt && cf == ct) //same square check (newly added)
+	//same square check 
+	if (rf == rt && cf == ct) 
 		return false;
-	// empty starting position check 
+	// empty starting position check (if user enters something by mistake)
 	if (board.grid[rf][cf] == nullptr)
 		return false;
-
+	// checking if destination is empty 
 	if (board.grid[rt][ct] == nullptr)
-		return true;  // Empty square is valid to move to
-	// party check
+		return true;  
+	// party check (same or enemy)
 	if (board.grid[rt][ct]->colorGetter() == board.grid[rf][cf]->colorGetter())
 		return false;
-	return true;
+	return true; // if block is not empty and of enemy then yess we'll move there
 }
 
 bool Rook::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board)
@@ -130,7 +126,7 @@ bool Rook::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 	else
 		return false;
 }
-bool Pawn::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) // newly added
+bool Pawn::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) 
 {
 	if (doubleCheck(fromRow, fromCol, toRow, toCol, board) == false)
 		return false;
@@ -153,11 +149,12 @@ bool Pawn::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 					return false;
 				}
 			}
-			else
+			else {
 				if (rt - rf != 1) {
 					cout << "Pawn can move only 1 step forward." << endl;
 					return false;
-				}	
+				}
+			}	
 		}
 		// diagonal capture
 		else {
@@ -181,11 +178,12 @@ bool Pawn::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 					return false;
 				}
 			}
-			else
+			else {
 				if (rf - rt != 1) {
 					cout << "Pawn can move only 1 step forward." << endl;
 					return false;
 				}
+			}	
 		}
 		// diagonal capture
 		else {
@@ -199,7 +197,7 @@ bool Pawn::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 	return true;
 }
 
-bool Knight::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) // newly added
+bool Knight::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) 
 {
 	if (doubleCheck(fromRow, fromCol, toRow, toCol, board) == false)
 		return false;
@@ -227,7 +225,7 @@ bool Knight::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boa
 	return false;
 }
 
-bool King::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) // newly added
+bool King::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board)
 {
 	if (doubleCheck(fromRow, fromCol, toRow, toCol, board) == false)
 		return false;
@@ -236,22 +234,36 @@ bool King::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 	int rt = returnRowIndex(toRow);
 	int cf = returnColIndex(fromCol);
 	int rf = returnRowIndex(fromRow);
+	bool Valid = false;
 	if (rt == rf - 1 && ct == cf)
-		return true;
+		Valid = true;
 	if (rt == rf + 1 && ct == cf)
-		return true;
+		Valid = true;
 	if (rt == rf && ct == cf - 1)
-		return true;
+		Valid = true;
 	if (rt == rf && ct == cf + 1)
-		return true;
+		Valid = true;
 	if (rt == rf - 1 && ct == cf - 1)
-		return true;
+		Valid = true;
 	if (rt == rf + 1 && ct == cf + 1)
-		return true;
+		Valid = true;
 	if (rt == rf + 1 && ct == cf - 1)
-		return true;
+		Valid = true;
 	if (rt == rf - 1 && ct == cf + 1)
-		return true;
+		Valid = true;
+	// if can't pass any of these 8 checks, have no right to move to InCheck condition :)
+	if (Valid == false)
+		return false;
+	else {
+		// check if destination is safe for king
+		bool notSafe = board.isInCheck(toRow, toCol, this->colorGetter()); // newly added
+		if (notSafe) {
+			cout << "ALERT !! King can't move into check" << endl;
+			return false;
+		}
+		else
+			return true;
+	}
 	return false;
 }
 
@@ -421,4 +433,44 @@ bool Queen::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boar
 	}
 	else
 		return false;
+}
+
+bool Board::isInCheck(char toRow, char toCol, string clr) // newly added
+{
+	for (int i = 0; i < 8; i++) {
+		for (int j = 0; i < 8; j++) {
+			if (grid[i][j] != nullptr && grid[i][j]->colorGetter() != clr) { // ensures square isn't empty and it's from enemy's color
+				char fromRow = i + '1';
+				char fromCol = 'a' + j;
+				bool isValid = grid[i][j]->isValidMove(fromRow, fromCol, toRow, toCol, *this);
+				if (isValid) {
+					return true; // opponent may capture king, so nope king can't move there
+				}
+			}
+		}
+	}
+	return false; // only if all enemy pieces in 8 by 8 grid can't capture king 
+}
+
+bool Board::isCheckMate(string clr) // newly added
+{
+	for (int i = 0; i < 8; i++) {
+		for (int j = 0; j < 8; j++) {
+			if (grid[i][j] != nullptr && grid[i][j]->colorGetter() == clr) {
+				char fromRow = i + '1';
+				char fromCol = 'a' + j;
+				for (int x = 0; x < 8; x++) {
+					for (int y = 0; y < 8; y++) {
+						char toRow = '1' + x;
+						char toCol = 'a' + y;
+						bool Valid = grid[i][j]->isValidMove(fromRow, fromCol, toRow, toCol, *this);
+						if (Valid) {
+							return false; // there's atleast one possible move 
+						}
+					}
+				}
+			}
+		}
+	}
+	return true; // no escape (Check Mate)
 }

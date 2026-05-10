@@ -68,6 +68,6 @@ public:
 	bool movePiece(); 
 	void setupBoard();
 	void printBoard();
-	bool isInCheck();
-	bool isCheckMate();
+	bool isInCheck(char toRow,char toCol,string clr); // new change
+	bool isCheckMate(string clr); // new change
 };
