@@ -10,7 +10,6 @@ class piece {
 	string color;
 	char symbol;
 	char position[3];
-
 public:
 	virtual bool isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) = 0;
 	void symbolSetter(const char s);
@@ -81,6 +80,7 @@ public:
 	Board();//new added
 	~Board();//new added
 	piece* grid[row][col];
+	string turnGetter(); //newly added
 	bool movePiece();
 	void setupBoard();
 	void printBoard()const;

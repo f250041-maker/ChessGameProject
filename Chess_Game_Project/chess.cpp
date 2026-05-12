@@ -277,42 +277,29 @@ bool Bishop::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boa
 	//color check
 	//move check
 	bool Check = doubleCheck(fromRow, fromCol, toRow, toCol, board);
-
 	bool isDiagonal = false;
 	if (fr != tr && fc != tc)
-	{
 		isDiagonal = true;
-	}
-	else
-	{
+	else {
 		isDiagonal = false;
 		return false;
 	}
-
-	if (Check && isDiagonal)
-	{
+	if (Check && isDiagonal) {
 		//diagonal moves
-
 		int rowStep, colStep;
 		if (tr > fr)
-		{
 			rowStep = 1;
-		}
 		else
 			rowStep = -1;
 
 		if (tc > fc)
-		{
 			colStep = 1;
-		}
 		else
 			colStep = -1;
 		int row = fr + rowStep;
 		int col = fc + colStep;
-		while (row != tr && col != tc)
-		{
-			if (board.grid[row][col] != nullptr)
-			{
+		while (row != tr && col != tc) {
+			if (board.grid[row][col] != nullptr) {
 				return false;
 			}
 			row += rowStep;
@@ -338,18 +325,15 @@ bool Queen::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boar
 		return false;
 	bool bishopMove = false;
 	bool rookMove = false;
-	if (fr != tr && fc != tc)
-	{
+	if (fr != tr && fc != tc) {
 		bishopMove = true;
 		rookMove = false;
 	}
-	else if (fr == tr && fc != tc)
-	{
+	else if (fr == tr && fc != tc) {
 		bishopMove = false;
 		rookMove = true;
 	}
-	else if (fc == tc && fr != tr)
-	{
+	else if (fc == tc && fr != tr) {
 		bishopMove = false;
 		rookMove = true;
 	}
@@ -360,19 +344,13 @@ bool Queen::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boar
 		if (rookMove)
 		{
 			//horizontal moves
-			if (fr == tr)
-			{
+			if (fr == tr) {
 				int step;
 				if (tc > fc)
-				{
 					step = 1; //right move
-				}
 				else
-				{
 					step = -1;//left  move
-				}
-				for (int j = fc + step; j != tc; j += step)
-				{
+				for (int j = fc + step; j != tc; j += step) {
 					if (board.grid[fr][j] != nullptr)
 						return false;
 				}
@@ -382,15 +360,11 @@ bool Queen::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boar
 			{
 				int step;
 				if (tr > fr)
-				{
 					step = 1;//move up
-				}
+				
 				else
-				{
 					step = -1;//move down
-				}
-				for (int row = fr + step; row != tr; row += step)
-				{
+				for (int row = fr + step; row != tr; row += step) {
 					if (board.grid[row][fc] != nullptr)
 						return false;
 				}
@@ -403,24 +377,18 @@ bool Queen::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boar
 		{
 			int rowStep, colStep;
 			if (tr > fr)
-			{
 				rowStep = 1;
-			}
 			else
 				rowStep = -1;
 
 			if (tc > fc)
-			{
 				colStep = 1;
-			}
 			else
 				colStep = -1;
 			int row = fr + rowStep;
 			int col = fc + colStep;
-			while (row != tr && col != tc)
-			{
-				if (board.grid[row][col] != nullptr)
-				{
+			while (row != tr && col != tc) {
+				if (board.grid[row][col] != nullptr) {
 					return false;
 				}
 				row += rowStep;
@@ -438,7 +406,7 @@ bool Queen::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boar
 bool Board::isInCheck(char toRow, char toCol, string clr) // newly added
 {
 	for (int i = 0; i < 8; i++) {
-		for (int j = 0; i < 8; j++) {
+		for (int j = 0; j < 8; j++) {
 			if (grid[i][j] != nullptr && grid[i][j]->colorGetter() != clr) { // ensures square isn't empty and it's from enemy's color
 				char fromRow = i + '1';
 				char fromCol = 'a' + j;
@@ -582,27 +550,36 @@ bool piece::isPawn() { return false; }
 bool Pawn::isPawn() { return true; }
 void piece::markAsMoved() {}
 void Pawn::markAsMoved() { isFirstMove = false; }
+string Board::turnGetter() // newly added
+{
+	return currentTurn;
+}
 bool Board::movePiece()
 {
-	cout << "enter your inital position (row first column second) e.g 1a)" << endl;
+	cout << "Enter your inital position (row first column second) e.g 1a)" << endl;
 	string from, to;
 	cin >> from;
-	cout << "now enter your target position (row first column second) e.g 2a)" << endl;
+	cout << "Now enter your target position (row first column second) e.g 2a)" << endl;
 	cin >> to;
 	int fr, tr, fc, tc;
 	fr = returnRowIndex(from[0]);
 	tr = returnRowIndex(to[0]);
 	fc = returnColIndex(from[1]);
 	tc = returnColIndex(to[1]);
-
 	if (grid[fr][fc]->colorGetter() != currentTurn)
 		return false;
-
 	bool isValid = grid[fr][fc]->isValidMove(from[0], from[1], to[0], to[1], *this);//*this for Board&
 	if (isValid)
 	{
-		if (grid[tr][tc] != nullptr)
-		{
+		if (grid[tr][tc] != nullptr) { // newly updated
+			if (grid[tr][tc]->symbolGetter() == 'k' ||
+				grid[tr][tc]->symbolGetter() == 'K')
+			{
+				cout << "King captured! Game Over!" << endl;
+				delete grid[tr][tc];
+				grid[tr][tc] = nullptr;
+				exit(0);
+			}
 			delete grid[tr][tc];
 		}
 		piece* move = grid[fr][fc];
@@ -614,22 +591,82 @@ bool Board::movePiece()
 		newPos[1] = tc + 'a';
 		newPos[2] = '\0';
 		move->positionSetter(newPos);  //position updated
-		if (move->isPawn())
-		{
+		// specially for first move and promotion of pawn, rest of pieces simply skip this block
+		if (move->isPawn()) { // mewly added
 			move->markAsMoved();
+			char choice;
+			if (currentTurn == "white" && tr == 0 || currentTurn == "black" && tr == 7) {
+				cout << "Pawn Promotion!" << endl;
+				if (currentTurn == "white") {
+					cout << "Knight - N \t Queen - Q \t Bishop - B \t Rook - R" << endl;
+					cout << "Enter choice : ";
+					cin >> choice;
+					while (!(choice >= 'A' && choice <= 'Z')) {
+						cout << "Re-enter : ";
+						cin >> choice;
+					}
+					delete grid[tr][tc];
+					grid[tr][tc] = nullptr;
+					char newPos[3];
+					newPos[0] = tr + '1';
+					newPos[1] = tc + 'a';
+					newPos[2] = '\0';
+				}
+				else if (currentTurn == "black") {
+					cout << "Knight - n \t Queen - q \t Bishop - b \t Rook - r" << endl;
+					cout << "Enter choice : ";
+					cin >> choice;
+					while (!(choice >= 'a' && choice <= 'z')) {
+						cout << "Re-enter : ";
+						cin >> choice;
+					}
+					delete grid[tr][tc];
+					grid[tr][tc] = nullptr;
+					newPos[0] = tr + '1';
+					newPos[1] = tc + 'a';
+					newPos[2] = '\0';
+				}
+				char sym;
+				if (choice == 'Q' || choice == 'q') {
+					if (currentTurn == "white")
+						sym = 'Q';
+					else
+						sym = 'q';
+					grid[tr][tc] = new Queen(currentTurn, sym, newPos);
+				}
+				else if (choice == 'N' || choice == 'n') {
+					if (currentTurn == "white")
+						sym = 'N';
+					else
+						sym = 'n';
+					grid[tr][tc] = new Knight(currentTurn, sym, newPos);
+				}
+				else if (choice == 'R' || choice == 'r') {
+					if (currentTurn == "white")
+						sym = 'R';
+					else
+						sym = 'r';
+					grid[tr][tc] = new Rook(currentTurn, sym, newPos);
+				}
+				else if (choice == 'B' || choice == 'b') {
+					if (currentTurn == "white")
+						sym = 'B';
+					else
+						sym = 'b';
+					grid[tr][tc] = new Bishop(currentTurn, sym, newPos);
+				}
+			}
 		}
-		if (currentTurn == "white")
-		{
+		// swicth turning
+		if (currentTurn == "white") {
 			currentTurn = "black";
 		}
 		else
 			currentTurn = "white";
 		return true;
 	}
-	else
-	{
-		cout << "invalid move ,try again" << endl;
+	else {
+		cout << "Invalid move ,try again" << endl;
 		return false;
 	}
-
 }
