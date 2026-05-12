@@ -127,7 +127,7 @@ bool Rook::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 		return false;
 }
 bool Pawn::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) 
-{
+{//removed all the couts ,they were printed repeatedly 
 	if (doubleCheck(fromRow, fromCol, toRow, toCol, board) == false)
 		return false;
 	// valid movement
@@ -137,61 +137,80 @@ bool Pawn::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 	int rf = returnRowIndex(fromRow);
 	string clr = board.grid[rf][cf]->colorGetter();
 	if (clr == "black" || clr == "Black" || clr == "BLACK") {
-		if (rf == 1)
-			isFirstMove = true;
-		else
-			isFirstMove = false;
+	
 		if (board.grid[rt][ct] == nullptr)
 		{
 			if (isFirstMove) {
-				if (rt - rf != 1 && rt - rf != 2) {
-					cout << "Pawn can move only 1 or 2 steps forward." << endl;
+				if (rt - rf == 1 || rt - rf == 2) 
+				{
+					if (rt - rf == 2) //new added,checks for piece blocking 
+					{
+						if (board.grid[rf + 1][cf] != nullptr) {
+							return false;
+						}
+					}
+				}
+				else {
 					return false;
 				}
 			}
 			else {
 				if (rt - rf != 1) {
-					cout << "Pawn can move only 1 step forward." << endl;
 					return false;
 				}
 			}	
 		}
 		// diagonal capture
 		else {
-			if (rt == rf + 1 && ct == cf - 1)
-				return true;
-			if (rt == rf + 1 && ct == cf + 1)
-				return true;
-			return false;
+			if ((rt == rf + 1 && ct == cf - 1) || (rt == rf + 1 && ct == cf + 1)) {
+				if (board.grid[rt][ct] != nullptr && board.grid[rt][ct]->colorGetter() != clr) {
+					return true;  // Valid capture
+				}
+				else {
+					return false;
+				}
+			}
+			else {
+				return false;
+			}
 		}
 	}
 	else if (clr == "white" || clr == "White" || clr == "WHITE") {
-		if (rf == 6)
-			isFirstMove = true;
-		else
-			isFirstMove = false;
+
 		if (board.grid[rt][ct] == nullptr)
 		{
 			if (isFirstMove) {
-				if (rf - rt != 1 && rf - rt != 2) {
-					cout << "Pawn can move only 1 or 2 steps forward." << endl;
+				if (rf - rt == 1 || rf - rt == 2) {
+					// NEW ADDED: Check path blocking for 2-step move
+					if (rf - rt == 2) {
+						if (board.grid[rf - 1][cf] != nullptr) {
+							return false;
+						}
+					}
+				}
+				else {
 					return false;
 				}
 			}
 			else {
 				if (rf - rt != 1) {
-					cout << "Pawn can move only 1 step forward." << endl;
 					return false;
 				}
 			}	
 		}
 		// diagonal capture
 		else {
-			if (rt == rf - 1 && ct == cf - 1)
-				return true;
-			else if (rt == rf - 1 && ct == cf + 1)
-				return true;
-			return false;
+			if ((rt == rf - 1 && ct == cf - 1) || (rt == rf - 1 && ct == cf + 1)) {
+				if (board.grid[rt][ct] != nullptr && board.grid[rt][ct]->colorGetter() != clr) {
+					return true;  // Valid capture
+				}
+				else {
+					return false;
+				}
+			}
+			else {
+				return false;
+			}
 		}
 	}
 	return true;
@@ -258,7 +277,6 @@ bool King::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 		// check if destination is safe for king
 		bool notSafe = board.isInCheck(toRow, toCol, this->colorGetter()); // newly added
 		if (notSafe) {
-			cout << "ALERT !! King can't move into check" << endl;
 			return false;
 		}
 		else
@@ -277,14 +295,12 @@ bool Bishop::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boa
 	//color check
 	//move check
 	bool Check = doubleCheck(fromRow, fromCol, toRow, toCol, board);
-	bool isDiagonal = false;
-	if (fr != tr && fc != tc)
-		isDiagonal = true;
-	else {
-		isDiagonal = false;
-		return false;
+	int rowDiff = tr - fr;
+	int colDiff = tc - fc;    //for diagonal check 
+	if (rowDiff != colDiff && rowDiff != -colDiff) {
+		return false;  
 	}
-	if (Check && isDiagonal) {
+	if (Check ) {
 		//diagonal moves
 		int rowStep, colStep;
 		if (tr > fr)
@@ -325,11 +341,12 @@ bool Queen::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boar
 		return false;
 	bool bishopMove = false;
 	bool rookMove = false;
-	if (fr != tr && fc != tc) {
+	int rowDiff = tr - fr;
+	int colDiff = tc - fc;    //for diagonal check 
+	if (rowDiff != colDiff && rowDiff != -colDiff) {
 		bishopMove = true;
-		rookMove = false;
 	}
-	else if (fr == tr && fc != tc) {
+	if (fr == tr && fc != tc) {
 		bishopMove = false;
 		rookMove = true;
 	}
@@ -566,8 +583,15 @@ bool Board::movePiece()
 	tr = returnRowIndex(to[0]);
 	fc = returnColIndex(from[1]);
 	tc = returnColIndex(to[1]);
-	if (grid[fr][fc]->colorGetter() != currentTurn)
+	if (grid[fr][fc] == nullptr) {  
+		cout << "No piece at that position!" << endl;
 		return false;
+	}
+	if (grid[fr][fc]->colorGetter() != currentTurn)
+	{
+		cout << "Wrong piece! It's " << currentTurn << "'s turn" << endl;
+		return false;
+	}
 	bool isValid = grid[fr][fc]->isValidMove(from[0], from[1], to[0], to[1], *this);//*this for Board&
 	if (isValid)
 	{
@@ -592,10 +616,9 @@ bool Board::movePiece()
 		newPos[2] = '\0';
 		move->positionSetter(newPos);  //position updated
 		// specially for first move and promotion of pawn, rest of pieces simply skip this block
-		if (move->isPawn()) { // mewly added
-			move->markAsMoved();
-			char choice;
-			if (currentTurn == "white" && tr == 0 || currentTurn == "black" && tr == 7) {
+		if (move->isPawn()) { // newly added
+			char choice=' ';
+			if ((currentTurn == "white" && tr == 0) || (currentTurn == "black" && tr == 7)) {
 				cout << "Pawn Promotion!" << endl;
 				if (currentTurn == "white") {
 					cout << "Knight - N \t Queen - Q \t Bishop - B \t Rook - R" << endl;
@@ -655,7 +678,10 @@ bool Board::movePiece()
 						sym = 'b';
 					grid[tr][tc] = new Bishop(currentTurn, sym, newPos);
 				}
+				move = grid[tr][tc];
 			}
+			else
+				move->markAsMoved();
 		}
 		// swicth turning
 		if (currentTurn == "white") {
