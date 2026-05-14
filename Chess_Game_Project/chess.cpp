@@ -342,18 +342,13 @@ bool Queen::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Boar
 	bool bishopMove = false;
 	bool rookMove = false;
 	int rowDiff = tr - fr;
-	int colDiff = tc - fc;    //for diagonal check 
-	if (rowDiff != colDiff && rowDiff != -colDiff) {
+	int colDiff = tc - fc;    //for diagonal check
+	if (fr == tr && fc != tc)
+		rookMove = true;
+	else if (fc == tc && fr != tr)
+		rookMove = true;
+	else if (rowDiff == colDiff || rowDiff == -colDiff)
 		bishopMove = true;
-	}
-	if (fr == tr && fc != tc) {
-		bishopMove = false;
-		rookMove = true;
-	}
-	else if (fc == tc && fr != tr) {
-		bishopMove = false;
-		rookMove = true;
-	}
 	else
 		return false;
 	if (Check)
@@ -578,6 +573,10 @@ bool Board::movePiece()
 	cin >> from;
 	cout << "Now enter your target position (row first column second) e.g 2a)" << endl;
 	cin >> to;
+	// added exception for wrong user input 
+	if (from.length() != 2 || to.length() != 2)
+		throw invalid_argument("Input must be exactly 2 characters like '2a' or '7e'");
+
 	int fr, tr, fc, tc;
 	fr = returnRowIndex(from[0]);
 	tr = returnRowIndex(to[0]);
@@ -633,7 +632,6 @@ bool Board::movePiece()
 					}
 					delete grid[tr][tc];
 					grid[tr][tc] = nullptr;
-					char newPos[3];
 					newPos[0] = tr + '1';
 					newPos[1] = tc + 'a';
 					newPos[2] = '\0';
