@@ -583,6 +583,9 @@ bool Board::movePiece()
 	tr = returnRowIndex(to[0]);
 	fc = returnColIndex(from[1]);
 	tc = returnColIndex(to[1]);
+	if (fr == -1 || fc == -1 || tr == -1 || tc == -1) // newly added
+		throw invalid_argument("Invalid position entered!");
+
 	if (grid[fr][fc] == nullptr) {  
 		cout << "No piece at that position!" << endl;
 		return false;

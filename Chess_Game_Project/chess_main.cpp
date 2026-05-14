@@ -16,23 +16,30 @@ int main()
 			break;
 		}
 		string turn = board.turnGetter();
-		bool moved = board.movePiece();
-		if (moved) {
-			string opponent;
-			if (turn == "white")  //checking checkmate for the player's who's about to play
-			{
-				opponent = "black";
+		try {
+			bool moved = board.movePiece();
+			if (moved) {
+				string opponent;
+				if (turn == "white")  //checking checkmate for the player's who's about to play
+				{
+					opponent = "black";
+				}
+				else
+				{
+					opponent = "white";
+				}
+				if (board.isCheckMate(opponent))
+				{
+					board.printBoard();
+					cout << "Checkmate! " << opponent << "  lose!! Game Over!" << endl;
+					break;
+				}
 			}
-			else
-			{
-				opponent = "white";
-			}
-			if (board.isCheckMate(opponent))
-			{
-				board.printBoard();
-				cout << "Checkmate! "<< opponent<<"  lose!! Game Over!" << endl;
-				break;
-			}
+		}
+		catch(exception & e)
+		{
+			cout << "Error : " << e.what() << endl;
+			cout << "Invalid input! Positions must be from 1a to 8h" << endl;
 		}
 	}
 	system("pause");
