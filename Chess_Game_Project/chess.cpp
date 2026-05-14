@@ -1,4 +1,4 @@
-#include "chess.h"
+﻿#include "chess.h"
 
 void piece::symbolSetter(const char s) {
 	symbol = s;
@@ -126,96 +126,86 @@ bool Rook::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board
 	else
 		return false;
 }
-bool Pawn::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) 
-{//removed all the couts ,they were printed repeatedly 
+bool Pawn::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board)
+{
 	if (doubleCheck(fromRow, fromCol, toRow, toCol, board) == false)
 		return false;
-	// valid movement
 	int ct = returnColIndex(toCol);
 	int rt = returnRowIndex(toRow);
 	int cf = returnColIndex(fromCol);
 	int rf = returnRowIndex(fromRow);
 	string clr = board.grid[rf][cf]->colorGetter();
 	if (clr == "black" || clr == "Black" || clr == "BLACK") {
-	
-		if (board.grid[rt][ct] == nullptr)
+		if (rf == 1)
+			isFirstMove = true;
+		else
+			isFirstMove = false;
+		if (board.grid[rt][ct] == nullptr) // destination is free
 		{
+			if (ct != cf)  // column changed → not straight forward
+				return false;
 			if (isFirstMove) {
-				if (rt - rf == 1 || rt - rf == 2) 
-				{
-					if (rt - rf == 2) //new added,checks for piece blocking 
-					{
-						if (board.grid[rf + 1][cf] != nullptr) {
-							return false;
-						}
-					}
-				}
-				else {
+				if (rt - rf != 1 && rt - rf != 2)
 					return false;
-				}
+				if (rt - rf == 2 && board.grid[rf + 1][cf] != nullptr) // destination is empty but right in front of pawn there's a piece ( can't move )
+					return false;
 			}
 			else {
-				if (rt - rf != 1) {
+				if (rt - rf != 1)
 					return false;
-				}
-			}	
+			}
 		}
-		// diagonal capture
-		else {
-			if ((rt == rf + 1 && ct == cf - 1) || (rt == rf + 1 && ct == cf + 1)) {
-				if (board.grid[rt][ct] != nullptr && board.grid[rt][ct]->colorGetter() != clr) {
-					return true;  // Valid capture
-				}
-				else {
-					return false;
-				}
-			}
-			else {
+		else { // diagonal capture 
+			if (rt == rf + 1 && ct == cf - 1) {
+				if (board.grid[rt][ct]->colorGetter() != clr) // enemy piece
+					return true;
 				return false;
 			}
+			if (rt == rf + 1 && ct == cf + 1) {
+				if (board.grid[rt][ct]->colorGetter() != clr)  // enemy piece
+					return true;
+				return false;
+			}
+			return false;
 		}
 	}
-	else if (clr == "white" || clr == "White" || clr == "WHITE") {
-
+	else if (clr == "white" || clr == "White" || clr == "WHITE")
+	{
+		if (rf == 6)
+			isFirstMove = true;
+		else
+			isFirstMove = false;
 		if (board.grid[rt][ct] == nullptr)
 		{
+			if (ct != cf)  // column changed → not straight forward
+				return false;
 			if (isFirstMove) {
-				if (rf - rt == 1 || rf - rt == 2) {
-					// NEW ADDED: Check path blocking for 2-step move
-					if (rf - rt == 2) {
-						if (board.grid[rf - 1][cf] != nullptr) {
-							return false;
-						}
-					}
-				}
-				else {
+				if (rf - rt != 1 && rf - rt != 2)
 					return false;
-				}
+				if (rf - rt == 2 && board.grid[rf - 1][cf] != nullptr)
+					return false;
 			}
 			else {
-				if (rf - rt != 1) {
+				if (rf - rt != 1)
 					return false;
-				}
-			}	
+			}
 		}
-		// diagonal capture
 		else {
-			if ((rt == rf - 1 && ct == cf - 1) || (rt == rf - 1 && ct == cf + 1)) {
-				if (board.grid[rt][ct] != nullptr && board.grid[rt][ct]->colorGetter() != clr) {
-					return true;  // Valid capture
-				}
-				else {
-					return false;
-				}
-			}
-			else {
+			if (rt == rf - 1 && ct == cf - 1) {
+				if (board.grid[rt][ct]->colorGetter() != clr)
+					return true;
 				return false;
 			}
+			if (rt == rf - 1 && ct == cf + 1) {
+				if (board.grid[rt][ct]->colorGetter() != clr)
+					return true;
+				return false;
+			}
+			return false;
 		}
 	}
 	return true;
 }
-
 bool Knight::isValidMove(char fromRow, char fromCol, char toRow, char toCol, Board& board) 
 {
 	if (doubleCheck(fromRow, fromCol, toRow, toCol, board) == false)
